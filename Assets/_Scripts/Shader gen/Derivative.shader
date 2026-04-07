@@ -89,7 +89,8 @@ Shader "Terrain/Derivative"
                 float2 positionWS2D = float2(positionWS.x, positionWS.z);
                 
                 // float elevation = FractalBrownianMotion(v.uv);
-                float elevation = terrain(v.uv + _Offset);
+                float elevation = terrain((v.uv + _Offset) * _Scale);
+                
                 // float elevation = v.uv.x;
                 positionWS.y = elevation;
 
@@ -114,19 +115,10 @@ Shader "Terrain/Derivative"
 
                     // texture version    
                 float2 p = floor(x);
-                
-                // float a = SAMPLE_TEXTURE2D(_NoiseTexture, sampler_NoiseTexture,(p+float2(0.5,0.5))/256.0 ).x;
-                // float b = SAMPLE_TEXTURE2D(_NoiseTexture, sampler_NoiseTexture,(p+float2(1.5,0.5))/256.0 ).x;
-                // float c = SAMPLE_TEXTURE2D(_NoiseTexture, sampler_NoiseTexture,(p+float2(0.5,1.5))/256.0 ).x;
-                // float d = SAMPLE_TEXTURE2D(_NoiseTexture, sampler_NoiseTexture,(p+float2(1.5,1.5))/256.0 ).x;
-                // float a = textureLod( iChannel0, (p+float2(0.5,0.5))/256.0, 0.0 ).x;
-                // float b = textureLod( iChannel0, (p+float2(1.5,0.5))/256.0, 0.0 ).x;
-                // float c = textureLod( iChannel0, (p+float2(0.5,1.5))/256.0, 0.0 ).x;
-                // float d = textureLod( iChannel0, (p+float2(1.5,1.5))/256.0, 0.0 ).x;
-                float a = hash12(p + float2(0.5,0.5));
-                float b = hash12(p + float2(1.5,0.5));
-                float c = hash12(p + float2(0.5,1.5));
-                float d = hash12(p + float2(1.5,1.5));
+                float a = hash12(p + float2(0.0,0.0));
+                float b = hash12(p + float2(1.0,0.0));
+                float c = hash12(p + float2(0.0,1.0));
+                float d = hash12(p + float2(1.0,1.0));
                 return float3(a+(b-a)*u.x+(c-a)*u.y+(a-b-c+d)*u.x*u.y,
 				du*(float2(b-a,c-a)+(a-b-c+d)*u.yx));
             }

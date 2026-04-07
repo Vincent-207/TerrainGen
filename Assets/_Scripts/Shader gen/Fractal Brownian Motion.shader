@@ -3,13 +3,15 @@ Shader "Terrain/FractalBrownianMotion"
     Properties
     {
         _BaseColor("Base Color", Color) = (1, 1, 1, 1)
+        // _WaterColor("Water Color", Color) = (0, 1, 0, 1)
         _BaseTexture("Base Texture", 2D) = "white" {}
         _BaseFrequency("Base Frequency", Range(0.0, 64.0)) = 4.0
         _BaseAmplitude("Base Amplitude", Range(0.0, 128.0)) = 1.5
         _Scale("Scale", Float) = 0.5
         _Octaves("Octaves", Range(0, 16)) = 8
-        _Lacunarity("Lacunarity", Float) = 2.0
-        _Gain("Gain", Float) = 0.5
+        _Lacunarity("Lacunarity", Range(0.0, 5.0)) = 2.0
+        _Gain("Gain", Range(0.0, 5.0)) = 0.5
+        // _WaterThreshold("Water Threshold", Range(0.0, 2.0)) = 1.0
     }
     SubShader
     {
@@ -38,6 +40,7 @@ Shader "Terrain/FractalBrownianMotion"
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _BaseColor;
+                // float4 _WaterColor;
                 float4 _BaseTexture_ST;
                 float _BaseFrequency;
                 float _BaseAmplitude;
@@ -45,6 +48,7 @@ Shader "Terrain/FractalBrownianMotion"
                 int _Octaves;
                 float _Lacunarity;
                 float _Gain;
+                // float _WaterThreshold;
             CBUFFER_END
 
             TEXTURE2D(_BaseTexture);
@@ -63,6 +67,8 @@ Shader "Terrain/FractalBrownianMotion"
             {
                 float4 positionCS : SV_POSITION;
                 float2 uv : TEXCOORD0;
+                // float4 positionOS : POSITION;
+                // float worldHeight;
             };
 
             v2f vert(appdata v)
@@ -78,7 +84,7 @@ Shader "Terrain/FractalBrownianMotion"
 
                 o.positionCS = TransformWorldToHClip(positionWS);
                 o.uv = TRANSFORM_TEX(v.uv, _BaseTexture);
-
+                // o.worldHeight = elevation;
                 return o;
             }
 
@@ -95,12 +101,18 @@ Shader "Terrain/FractalBrownianMotion"
                     amp *= _Gain;
                 }
 
+                // sum = clamp(_WaterThreshold, sum, sum + 1);
+
                 return sum;
             }
 
             float4 frag(v2f i) : SV_TARGET
             {
                 float4 textureColor = SAMPLE_TEXTURE2D(_BaseTexture, sampler_BaseTexture, i.uv);
+                // if(i.worldHeight <= _WaterThreshold)
+                // {
+                //     return _WaterColor;
+                // }
                 return textureColor * _BaseColor;
             }
 

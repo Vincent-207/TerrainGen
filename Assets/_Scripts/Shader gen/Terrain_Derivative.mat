@@ -33,14 +33,14 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _BaseAmplitude: 6.68
-    - _BaseFrequency: 4.2
+    - _BaseAmplitude: 4
+    - _BaseFrequency: 8
     - _Gain: 0.53
     - _Lacunarity: 1.75
     - _Octaves: 16
-    - _Scale: 0.5
+    - _Scale: 4
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Offset: {r: 34.2, g: 16, b: 0, a: 0}
+    - _Offset: {r: 33.5, g: 16.5, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
