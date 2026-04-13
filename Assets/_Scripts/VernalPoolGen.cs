@@ -11,8 +11,13 @@ public class VernalPoolGen : MonoBehaviour
     Mesh mesh;
     void Start()
     {
-        mesh = GetComponent<MeshFilter>().sharedMesh;
-        
+        mesh = new Mesh();
+
+        Mesh baseMesh = GetComponent<MeshFilter>().sharedMesh;
+        mesh.vertices = baseMesh.vertices;
+        mesh.uv = baseMesh.uv;
+        mesh.triangles = baseMesh.triangles;
+        GetComponent<MeshFilter>().sharedMesh = mesh;
     }
 
     void Update()
@@ -35,7 +40,7 @@ public class VernalPoolGen : MonoBehaviour
             for(int z = 0; z < sideLength; z++)
             {
                 float height = GetHeight((x + seed), (z + seed));
-                verticies[vertIndex].y = height;
+                verticies[vertIndex].y += height;
                 vertIndex++;
 
             }
@@ -58,13 +63,16 @@ public class VernalPoolGen : MonoBehaviour
 
     void CreateColors()
     {
-        Color[] colors = new Color[mesh.vertices.Length];
+        Color[] colors = mesh.colors;
+        Debug.Log("Colors length: " + colors.Length);
+        // Color[] colors = new Color[mesh.vertices.Length];
 
         for(int i = 0; i < mesh.vertices.Length; i++)
         {
             if(mesh.vertices[i].y <= heightThreshold * amplitude)
             {
                 colors[i] = Color.blue;
+                Debug.Log("blue!");
             }
             else colors[i] = Color.white;
         }
