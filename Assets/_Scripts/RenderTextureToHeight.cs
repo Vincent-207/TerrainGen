@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class RenderTextureToHeight : MonoBehaviour
 {   
+    [SerializeField]
     Texture2D renderTexture;
     Mesh mesh;
     void Start()
@@ -25,12 +26,14 @@ public class RenderTextureToHeight : MonoBehaviour
         Vector3[] vertices = mesh.vertices;
         int verticeSideLength = (int) Mathf.Sqrt(mesh.vertices.Length);
         ScalableBufferManager.ResizeBuffers(verticeSideLength, verticeSideLength);
+        byte[] data = renderTexture.GetRawTextureData();
         for(int x = 0, i = 0; x < verticeSideLength; x++)
         {
             for(int z = 0; z < verticeSideLength; z++)
             {
-                // vertices[i] = renderTexture.ReadPixels()
-                // i++;
+                i++;
+                float height = data[i];
+                
             }
         }
     }

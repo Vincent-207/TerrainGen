@@ -5,10 +5,10 @@ using UnityEngine;
 public class DerivativeComputeController : MonoBehaviour
 {
     public ComputeShader computeShader;
-    public RenderTexture renderTexture;
+    public RenderTexture renderTexture, normalMap;
     [SerializeField] [Range(0.0f, 64.0f)] float baseFrequency = 4f;
     [SerializeField] [Range(0.0f, 16.0f)] float baseAmplitude = 1f;
-    [SerializeField] [Range(0.0f, 8.0f)] float scale = 0.5f;
+    [SerializeField] [Range(0.0f, 2.0f)] float scale = 0.5f;
     [SerializeField] [Range(0,16)] int octaves = 8;
     [SerializeField] [Range(0.0f, 4.0f)] float lacunarity = 2f;
     [SerializeField] [Range(0.0f, 4.0f)] float gain = 0.5f;
@@ -36,6 +36,7 @@ public class DerivativeComputeController : MonoBehaviour
     {
         int kernal = computeShader.FindKernel("CSMain");
         computeShader.SetTexture(kernal, "Result", renderTexture);
+        computeShader.SetTexture(kernal, "NormalMap", normalMap);
         computeShader.SetFloat("_BaseFrequency", baseFrequency);
         computeShader.SetFloat("_BaseAmplitude", baseAmplitude);
         computeShader.SetFloat("_Scale", scale);

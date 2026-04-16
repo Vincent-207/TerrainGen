@@ -4,6 +4,7 @@
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
 RWTexture2D<float4> Result;
+RWTexture2D<float4> NormalMap;
 float2 _Offset;
 float _Scale;
 float _BaseFrequency;
@@ -12,33 +13,113 @@ int _Octaves;
 float _Gain;
 float _Lacunarity;
 
-float terrain( float2 p );
+float3 terrain( float2 p );
 float3 noised( float2 x );
 float hash12(float2 p);
+
+float4 terrain3d (float3 p);
+float4 noised3d (float3 x);
+float hash13(float3 p3);
 
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     // TODO: insert actual code here!
-    float elevation = terrain((id.xy + _Offset) * _Scale) / _BaseAmplitude;   
-    Result[id.xy] = float4(elevation, elevation, elevation, 1.0);
+    float2 flatPos = id.xy + _Offset;
+    float3 realPos = float3(flatPos.x, flatPos.y, 1);
+    // float4 elevation = terrain3d((realPos / _BaseFrequency) * _Scale);
+    // float height = elevation.x + 0.5;
+    float3 elevation = terrain(realPos * _Scale);
+    float height = elevation.x;
+    Result[id.xy] = float4(height, height, height, 1.0);
+    float3 normal = normalize(float3(elevation.x, elevation.y, elevation.z));
+    NormalMap[id.xy] = float4(normal, 1.0);
 }
 
-float terrain( float2 p )
+
+float3 terrain( float2 p )
 {
     p /= _BaseFrequency;
     float a = 0.0;
     float b = _BaseAmplitude;
     float2  d = float2(0.0,0.0);
+    float max = 0;
     for( int i = 0; i < _Octaves; i++ )
     {
         float3 n = noised(p);
         d += n.yz;
         a += b*n.x/(1.0+dot(d,d));
+        max += b / (1.0 + dot(d,d));
         b *= _Gain;
         p *= _Lacunarity;
     }
-    return a;
+    float3 output = float3(a, d.x, d.y);
+    output.x /= max;
+    return output;
+}
+
+float4 terrain3d (float3 x)
+{
+    float3x3 m3  = float3x3( 0.00,  0.80,  0.60,
+                      -0.80,  0.36, -0.48,
+                      -0.60, -0.48,  0.64 );
+    float3x3 m3i = float3x3( 0.00, -0.80, -0.60,
+                             0.80,  0.36, -0.48,
+                             0.60, -0.48,  0.64);
+    float max = 0.0;
+    float f = _Lacunarity;
+    float s = _Gain;
+    float a = 0.0;
+    float b = _BaseAmplitude;
+    float3 d = float3(0,0,0);
+    float3x3 m = float3x3(  1.0, 0.0, 0.0,
+                            0.0, 1.0, 0.0,
+                            0.0, 0.0, 1.0);
+    for(int i = 0; i < _Octaves; i++)
+    {
+        float4 n = noised3d(x);
+        a += b *n.x/(2.0 + dot(d, d));
+        max += b;
+        d += b * mul(m, n.yzw);
+        b *= s;
+        x = f * mul(m3, x);
+        m = 62.0 * mul(m3i, m);
+    }
+    a/= max;
+    float4 output = float4(a, d.x, d.y, d.z);
+    return output;
+}
+
+float4 noised3d (float3 x)
+{
+    float3 p = floor(x);
+    float3 w = frac(x);
+
+    float3 u = w*w*w*(w*(w*6.0-15.0)+10.0);
+    float3 du = 30.0*w*w*(w*(w-1.0)+2.0);
+
+    float a = hash13( p+float3(0,0,0) );
+    float b = hash13( p+float3(1,0,0) );
+    float c = hash13( p+float3(0,1,0) );
+    float d = hash13( p+float3(1,1,0) );
+    float e = hash13( p+float3(0,0,1) );
+    float f = hash13( p+float3(1,0,1) );
+    float g = hash13( p+float3(0,1,1) );
+    float h = hash13( p+float3(1,1,1) );
+
+    float k0 =   a;
+    float k1 =   b - a;
+    float k2 =   c - a;
+    float k3 =   e - a;
+    float k4 =   a - b - c + d;
+    float k5 =   a - c - e + g;
+    float k6 =   a - b - e + f;
+    float k7 = - a + b + c - d + e - f - g + h;
+
+    return float4( -1.0+2.0*(k0 + k1*u.x + k2*u.y + k3*u.z + k4*u.x*u.y + k5*u.y*u.z + k6*u.z*u.x + k7*u.x*u.y*u.z),
+                 2.0*du *float3( k1 + k4*u.y + k6*u.z + k7*u.y*u.z,
+                               k2 + k5*u.z + k4*u.x + k7*u.z*u.x,
+                               k3 + k6*u.x + k5*u.y + k7*u.x*u.y ) );
 }
 
 // value noise and its derivatives
@@ -66,6 +147,13 @@ float3 noised( float2 x )
 float hash12(float2 p)
 {
     float3 p3  = frac(float3(p.xyx) * .1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return frac((p3.x + p3.y) * p3.z);
+}
+
+float hash13(float3 p3)
+{
+	p3  = frac(p3 * .1031);
     p3 += dot(p3, p3.yzx + 33.33);
     return frac((p3.x + p3.y) * p3.z);
 }
