@@ -39,8 +39,10 @@ public class VernalPoolGen : MonoBehaviour
         {
             for(int z = 0; z < sideLength; z++)
             {
-                float height = GetHeight((x + seed), (z + seed));
-                verticies[vertIndex].y += height;
+                float height = GetHeight(x + seed, z + seed);
+                verticies[vertIndex].y = height;
+                // verticies[vertIndex].z = 0;
+                // verticies[vertIndex] = new Vector3(x, vertIndex, z);
                 vertIndex++;
 
             }
@@ -55,7 +57,7 @@ public class VernalPoolGen : MonoBehaviour
 
     float GetHeight(int x, int z)
     {
-        float height = amplitude *Mathf.PerlinNoise(x / frequency, z /frequency);
+        float height = amplitude * Mathf.PerlinNoise(x / frequency, z /frequency);
         float proportion = height / amplitude;
         float output = heightCurve.Evaluate(proportion) * amplitude;
         return output;

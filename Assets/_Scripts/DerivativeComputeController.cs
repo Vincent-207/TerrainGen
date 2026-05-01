@@ -14,8 +14,10 @@ public class DerivativeComputeController : MonoBehaviour
     [SerializeField] [Range(0.0f, 4.0f)] float gain = 0.5f;
     [SerializeField] Vector2 offset;
     public int vertSideLength = 256;
+    public Vector2 seed;
 
     public bool reRender;
+
     void Start()
     {
         DoRender();
@@ -27,7 +29,7 @@ public class DerivativeComputeController : MonoBehaviour
         // {
         //     DoRender();
         //     reRender = false;
-        // }
+        // 
         DoRender();
     }
 
@@ -43,7 +45,13 @@ public class DerivativeComputeController : MonoBehaviour
         computeShader.SetFloat("_Gain", gain);
         computeShader.SetFloat("_Lacunarity", lacunarity);
         computeShader.SetInt("_Octaves", octaves);
-        computeShader.SetVector("_Offset", offset);
+        computeShader.SetVector("_Offset", offset + seed);
         computeShader.Dispatch(kernal, 64, 64, 1);
+    }
+
+    public void SetPos(Vector2 flatPos)
+    {
+        flatPos *= -1;
+        offset = (flatPos * 32);
     }
 }

@@ -14,6 +14,7 @@ public class SaveMesh : MonoBehaviour
     public void Save()
     {
         // Copy mesh
+        meshFilter = GetComponent<MeshFilter>();
         Mesh meshToSave = new();
         meshToSave.SetVertices(meshFilter.sharedMesh.vertices);
         meshToSave.triangles = meshFilter.sharedMesh.triangles;
